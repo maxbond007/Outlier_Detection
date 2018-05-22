@@ -3,26 +3,20 @@
 """
 Created on Thu May 17 23:19:12 2018
 
-@author: panda
+@author: Maxim Bondarenko
 """
-
-'''          
-#%%
-import pandas as pd
-import numpy as np
-import scipy as sp
-import scipy.spatial.distance as dist
-from sklearn.metrics import confusion_matrix, accuracy_score
-   
-test = Data.copy(deep=True) 
-'''
 
 #%% 
 
 def calculate_dist(data):
     """
-        This function replace NaN values for median and scaling values to [0 1]
-        calculate three vectors of Euclidean,Mahalanobis and Cosine distances 
+        This function replaces NaN values for median and scaling values to [0 1]
+        it also calculates three vectors of Euclidean,
+        Mahalanobis and Cosine distances between centroid of rows and
+        each row in dataframe
+        
+        Returns:
+            three vectors of distances
         
     """ 
     import scipy.spatial.distance as dist
@@ -39,7 +33,7 @@ def calculate_dist(data):
         if data[k].isnull().sum() >  len(data[k])*0.8 or len(set(data[k])) == 1:
             del data[k]
 
-
+    # Calculate centroid
     centroid =  np.mean(data) 
     centroid = centroid.as_matrix()
     numpyMatrix = data.as_matrix()
@@ -65,7 +59,12 @@ def calculate_dist(data):
     
 def detector(Mahaldist, Eucliddist, Cosinedist):
     '''
-        Outlier Detection by percentile
+        This function makes outlier detection by 
+        different parametrs of percentile [80 99] in all possible combination
+        of distances
+        
+        Returns: 
+            7 tables which contain the result of detection by percentile
     '''
     import pandas as pd
     import numpy as np
@@ -84,10 +83,12 @@ def detector(Mahaldist, Eucliddist, Cosinedist):
 
     
     for k in range(20):
+        # calculation percentile
         P1=np.percentile(Eucliddist, 80+k)
         P2=np.percentile(Mahaldist, 80+k)
         P3=np.percentile(Cosinedist, 80+k)
       
+        # extraction of data exceeding the percentile
         my_list1 = pd.DataFrame([[x,index] for index, x in enumerate(Eucliddist) 
             if x >= P1], columns=['parametr','id'])
         my_list2 = pd.DataFrame([[x,index] for index, x in enumerate(Mahaldist) 
@@ -95,7 +96,7 @@ def detector(Mahaldist, Eucliddist, Cosinedist):
         my_list3 = pd.DataFrame([[x,index] for index, x in enumerate(Cosinedist) 
             if x >= P3], columns=['parametr','id'])
     
-        # search for similar anomalies
+        # search for similar anomalies (7 combinations)
         outliers1 = pd.DataFrame(list(set(my_list2.id) & set(my_list3.id)))
         outliers2 = pd.DataFrame(list(set(my_list1.id) & set(my_list2.id)))
         outliers3 = pd.DataFrame(list(set(my_list1.id) & set(my_list3.id)))
@@ -110,6 +111,7 @@ def detector(Mahaldist, Eucliddist, Cosinedist):
         outliers_mah.append(list(set(my_list2.id)))
         outliers_cos.append(list(set(my_list3.id)))
     
+        # classification of data on anomalies or not
         if not outliers1.empty:
             macos[k][outliers1[0]] = 1
         if not outliers2.empty:   
@@ -124,7 +126,7 @@ def detector(Mahaldist, Eucliddist, Cosinedist):
         cosin[k][my_list3.id] = 1
 
     outliers = {}
-    #dictionary of dataframe of anomalies
+    # generate dictionary of dataframe of anomalies
     outliers['euclid'] = pd.DataFrame(outliers_euc).T
     outliers['mahal'] = pd.DataFrame(outliers_mah).T
     outliers['cosine'] = pd.DataFrame(outliers_cos).T
@@ -143,12 +145,18 @@ def quality_of_classification(euclid, mahal, cosin, macos, maeuc, eucos,
     
     '''
         This function calculate accuracy, specificity and sensitivity
-        in different combinations of distance
+        in different combinations of distances
+        
+        Returns: 
+            list of maximum value of accuracy in each combination 'max_acc',
+            dataframe the best combination of distances of accuracy and
+            all calculated values of accuracy, specificity and sensitivity
+            in 'frame_dict'
     
     '''
     import pandas as pd
     from sklearn.metrics import confusion_matrix, accuracy_score
-    #true_data = np.zeros(len(euclid))
+
     accuracy_euclid, accuracy_mahal, accuracy_cosin = [],[],[]
     specificity_euclid, specificity_mahal, specificity_cosin = [],[],[]
     sensitivity_euclid, sensitivity_mahal, sensitivity_cosin = [],[],[]
@@ -163,43 +171,54 @@ def quality_of_classification(euclid, mahal, cosin, macos, maeuc, eucos,
         for k in range(20)}
 
     for i in range(20):
-    
+        
+        #calculation accuracy, specificity and sensitivity for euclidean dist
         tn,fp,fn,tp = confusion_matrix(true_data, euclid[i]).ravel()
         accuracy_euclid.append(accuracy_score(true_data, euclid[i]))
         specificity_euclid.append(fp/(fp+tp))
         sensitivity_euclid.append(tp/(tp+fn))
-    
+        
+        #calculation accuracy, specificity and sensitivity for mahalanobis dist
         tn,fp,fn,tp = confusion_matrix(true_data, mahal[i]).ravel()
         accuracy_mahal.append(accuracy_score(true_data, mahal[i]))
         specificity_mahal.append(fp/(fp+tp))
         sensitivity_mahal.append(tp/(tp+fn))
-    
+        
+        #calculation accuracy, specificity and sensitivity for cosine dist
         tn,fp,fn,tp = confusion_matrix(true_data, cosin[i]).ravel()
         accuracy_cosin.append(accuracy_score(true_data, cosin[i]))
         specificity_cosin.append(fp/(fp+tp))
         sensitivity_cosin.append(tp/(tp+fn))
         
+        '''calculation accuracy, specificity and sensitivity for combonation of 
+        mahalanobis and cosine dist'''
         tn,fp,fn,tp = confusion_matrix(true_data, macos[i]).ravel()
         accuracy_macos.append(accuracy_score(true_data, macos[i]))
         specificity_macos.append(fp/(fp+tp))
         sensitivity_macos.append(tp/(tp+fn))
         
+        '''calculation accuracy, specificity and sensitivity for combonation of 
+        euclidean and cosine dist'''
         tn,fp,fn,tp = confusion_matrix(true_data, eucos[i]).ravel()
         accuracy_eucos.append(accuracy_score(true_data, eucos[i]))
         specificity_eucos.append(fp/(fp+tp))
         sensitivity_eucos.append(tp/(tp+fn))
-    
+        
+        '''calculation accuracy, specificity and sensitivity for combonation of 
+        euclidean and mahalanobis dist'''
         tn,fp,fn,tp = confusion_matrix(true_data, maeuc[i]).ravel()
         accuracy_maeuc.append(accuracy_score(true_data, maeuc[i]))
         specificity_maeuc.append(fp/(fp+tp))
         sensitivity_maeuc.append(tp/(tp+fn))
-    
+        
+        '''calculation accuracy, specificity and sensitivity for combonation of 
+        euclidean,cosine and mahalanobis dist'''
         tn,fp,fn,tp = confusion_matrix(true_data, maeuccos[i]).ravel()
         accuracy_maeuccos.append(accuracy_score(true_data, maeuccos[i]))
         specificity_maeuccos.append(fp/(fp+tp))
         sensitivity_maeuccos.append(tp/(tp+fn))
   
-
+        #generate dictionary of dataframe of accuracy, specificity, sensitivity
         frame_dict[i].loc['euclid'] = [sensitivity_euclid[i],
                    specificity_euclid[i],accuracy_euclid[i]]
         frame_dict[i].loc['mahal'] = [sensitivity_mahal[i],
@@ -215,10 +234,10 @@ def quality_of_classification(euclid, mahal, cosin, macos, maeuc, eucos,
         frame_dict[i].loc['mah+euc+cos'] = [sensitivity_maeuccos[i],
                    specificity_maeuccos[i],accuracy_maeuccos[i]]
 
+        # maximum accuracy in each combination
         max_acc.append(frame_dict[i]['accuracy'].max())
         accuracy.append(frame_dict[i]['accuracy'][frame_dict[i]['accuracy'] == max_acc[i]].to_dict())
     
-        #max_acc.index(max(max_acc))
     return max_acc, accuracy, frame_dict
     
 

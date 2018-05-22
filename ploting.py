@@ -3,12 +3,12 @@
 """
 Created on Fri May 18 03:02:31 2018
 
-@author: panda
+@author: Maxim Bondarenko
 """
 
 def boxplot(Euclideandist,Mahalanobisdist,Cosinedist): 
     '''
-        Ploting boxplot
+        Ploting 3 boxplot of distances
         
     '''
     import matplotlib.pyplot as plt
@@ -30,6 +30,11 @@ def boxplot(Euclideandist,Mahalanobisdist,Cosinedist):
 
 
 def histogram(Euclideandist,Mahalanobisdist, Cosinedist, length):
+    
+    '''
+        Ploting 3 histograms of distances
+        
+    '''
     
     import numpy as np
     import matplotlib.pyplot as plt

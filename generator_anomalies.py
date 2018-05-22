@@ -3,12 +3,20 @@
 """
 Created on Fri May 18 01:59:51 2018
 
-@author: panda
+@author: Maxim Bondarenko
 """
 def generator(test, percent):
     
+    """
+        This function generates anomalies in the data (1%, 5%, 10%, 15%)
+        
+        Returns:
+            data with anomalies
+        
+    """
+    
     import numpy as np  
-    # генерация аномальных пациентов 1%
+    # 1% of anomalies in the data
     if percent == 1:
         true_data = np.zeros(len(test))
         anom_patients = [100,303,404,256]
@@ -17,7 +25,7 @@ def generator(test, percent):
             test.iloc[int(i),300:370] = 5
             true_data[i] = 1
             
-    # генерация аномальных пациентов 5%
+    # 5% of anomalies in the data
     elif percent == 5:
         true_data = np.zeros(len(test))
         anom_patients = [0,1,2,3,4,5,6,7,9,11,28,40,53,89,201,203]
@@ -26,7 +34,7 @@ def generator(test, percent):
             test.iloc[i,300:370] = 5
             true_data[i] = 1
     
-    # генерация аномальных пациентов 10%
+    # 10% of anomalies in the data
     elif percent == 10:
         true_data = np.zeros(len(test))
         anom_patients = [i for i in np.arange(0,400, 10)]
@@ -35,7 +43,7 @@ def generator(test, percent):
             test.iloc[int(i),300:370] = 5
             true_data[int(i)] = 1   
     
-    # генерация аномальных пациентов 15%
+    # 15% of anomalies in the data
     elif percent == 15:
         true_data = np.zeros(len(test))
         anom_patients = [i for i in np.arange(0,400, 7)]
