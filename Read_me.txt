@@ -19,19 +19,19 @@ by detecting anomalous records.
 Description of the files in my project
 
 Data.csv
-	This is the data received at the output from the SQL_import.py
+	This is the data received in the output from the file SQL_import.py
 
 main.py
-	The main file which run the algorithm.
+	The main file which runs the algorithm.
 
  SQL_import.py
-	This is the sql import of data from database.
+	This is the sql import of data from the database.
 
 transform.py
-	There are additional function for SQL_import.py.
+	There are additional functions for SQL_import.py.
 
 generator_anomalies.py
-	This file is responsible for generate anomalies in data.
+	This file is responsible for generating anomalies in data.
 
 detection.py
-	It is the main algorithm for detection of outliers in data.
+	It is the main algorithm for detecting of outliers in data.
