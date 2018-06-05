@@ -1,0 +1,24 @@
+declare
+  x_value text;
+  x_state text;
+begin
+  -- Maxim Bondarenko,
+  -- This function takes JSON data of one question - ie. {"Q3":{"value":"asdf","state":"done"}}
+  -- If question state is 'done', than the function returns actual question value.
+  -- If the question is on form that is in pending state, than JSON can contain invalid data (data that will not pass JavaScript validations).
+  -- In such case exception is raised. In all other cases (states "empty", "skipped", no input data etc.) this function returns null.
+
+  if a_question_data is null then
+    return null;
+  else
+    --raise notice 'JSON data: %', a_question_data;
+    x_state := nullif(json_extract_path_text(a_question_data, 'state'), '');
+    x_value := nullif(json_extract_path_text(a_question_data, 'value'), '');
+    case x_state 
+      when 'done'    then return x_value;
+      --when 'invalid' then raise exception 'Found invalid question data: %', x_value;
+      else                return null;
+    end case;
+  end if;
+end;
+
